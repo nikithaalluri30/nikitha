@@ -5,6 +5,7 @@
 #include "fsmonitor-ipc.h"
 #include "fsmonitor-settings.h"
 #include "fsmonitor-path-utils.h"
+#include "advice.h"
 
 /*
  * We keep this structure defintion private and have getters
