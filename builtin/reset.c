@@ -376,7 +376,7 @@ int cmd_reset(int argc, const char **argv, const char *prefix)
 		set_config_update_recurse_submodules(recurse_submodules);
 
 	if (read_from_stdin) {
-		pathspec_from_file = "-";
+		pathspec_from_file = xstrdup("-");
 		if (nul_term_line)
 			pathspec_file_nul = 1;
 	}
