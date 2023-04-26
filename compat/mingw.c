@@ -24,6 +24,7 @@
 #include "../attr.h"
 #include "../string-list.h"
 #include "../write-or-die.h"
+#include "../repository.h"
 
 #define HCAST(type, handle) ((type)(intptr_t)handle)
 
