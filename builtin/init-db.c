@@ -31,7 +31,6 @@
 
 #define GIT_DEFAULT_HASH_ENVIRONMENT "GIT_DEFAULT_HASH"
 
-static int init_is_bare_repository = 0;
 static int init_shared_repository = -1;
 
 static void copy_templates_1(struct strbuf *path, struct strbuf *template_path,
@@ -231,9 +230,24 @@ static int create_default_files(const char *template_path,
 	 * We must make sure command-line options continue to override any
 	 * values we might have just re-read from the config.
 	 */
-	is_bare_repository_cfg = init_is_bare_repository || !work_tree;
 	if (init_shared_repository != -1)
 		set_shared_repository(init_shared_repository);
+	/*
+	 * TODO: heed core.bare from config file in templates if no
+	 *       command-line override given
+	 *
+	 * Unfortunately, this location in the code is far too late to
+	 * allow this to happen; both builtin/init.db and
+	 * builtin/clone.c setup the new repository and call
+	 * set_git_work_tree() before this point.  (Note that both do
+	 * that repository setup before calling init_db(), which in
+	 * turn calls create_default_files().)  Fixing it would
+	 * require too much refactoring, and no one seems to have
+	 * wanted this behavior in 15+ years, so we'll continue
+	 * ignoring the config for now and just override
+	 * is_bare_repository_cfg unconditionally.
+	 */
+	is_bare_repository_cfg = is_bare_repository() || !work_tree;
 
 	/*
 	 * We would have created the above under user's umask -- under
@@ -421,8 +435,6 @@ int init_db(const char *git_dir, const char *real_git_dir,
 	git_config(platform_core_config, NULL);
 
 	safe_create_dir(git_dir, 0);
-
-	init_is_bare_repository = is_bare_repository();
 
 	/* Check to see if the repository version is right.
 	 * Note that a newly created repository does not have
