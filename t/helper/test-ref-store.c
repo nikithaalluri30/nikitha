@@ -7,6 +7,7 @@
 #include "path.h"
 #include "repository.h"
 #include "strbuf.h"
+#include "revision.h"
 
 struct flag_definition {
 	const char *name;
@@ -118,8 +119,16 @@ static struct flag_definition pack_flags[] = { FLAG_DEF(PACK_REFS_PRUNE),
 static int cmd_pack_refs(struct ref_store *refs, const char **argv)
 {
 	unsigned int flags = arg_flags(*argv++, "flags", pack_flags);
+	static struct ref_exclusions exclusions = REF_EXCLUSIONS_INIT;
+	static struct string_list included_refs = STRING_LIST_INIT_NODUP;
+	struct pack_refs_opts pack_opts = { .flags = flags,
+					    .exclusions = &exclusions,
+					    .includes = &included_refs };
 
-	return refs_pack_refs(refs, flags);
+	if (pack_opts.flags & PACK_REFS_ALL)
+		string_list_append(pack_opts.includes, "*");
+
+	return refs_pack_refs(refs, &pack_opts);
 }
 
 static int cmd_create_symref(struct ref_store *refs, const char **argv)
